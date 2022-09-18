@@ -17,55 +17,72 @@ public class MovingObject : MonoBehaviour
 
     private bool canMove = true;
 
+    private Animator animator;
+
     void Start()
     {
-        
+        animator = GetComponent<Animator>();
     }
 
     IEnumerator MoveCoroutine()
     {
-
-        if(Input.GetKey(KeyCode.LeftShift))
+        while (Input.GetAxisRaw("Vertical") != 0 || Input.GetAxisRaw("Horizontal") != 0)
+        {
+            if (Input.GetKey(KeyCode.LeftShift))
             {
                 applyRunSpeed = runSpeed;
                 applyRunFlag = true;
             }
-            else 
+            else
             {
                 applyRunSpeed = 0;
                 applyRunFlag = false;
             }
 
-            vector.Set(Input.GetAxisRaw("Horizontal"),Input.GetAxisRaw("Vertical"),0);
+            vector.Set(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"), 0);
 
-            while(currentWalkCount < walkCount)
+            if(vector.x !=0) 
+                vector.y = 0;
+            else if(vector.y != 0)
+                vector.x = 0;
+
+            animator.SetFloat("DirX", vector.x);
+            animator.SetFloat("DirY", vector.y);
+            animator.SetBool("Walking", true);
+
+            while (currentWalkCount < walkCount)
             {
-                if(vector.x != 0)
+                if (vector.x != 0)
                 {
-                    transform.Translate(vector.x * (speed + applyRunSpeed) ,0,0);
+                    transform.Translate(vector.x * (speed + applyRunSpeed), 0, 0);
                 }
-                else if (vector.y != 0) 
+                else if (vector.y != 0)
                 {
-                    transform.Translate(0 ,vector.y *(speed + applyRunSpeed),0);
+                    transform.Translate(0, vector.y * (speed + applyRunSpeed), 0);
                 }
 
-                if(applyRunFlag) 
-                    currentWalkCount+=1;
-                currentWalkCount += 1; 
+                if (applyRunFlag)
+                    currentWalkCount += 1;
+
+                currentWalkCount += 1;
                 yield return new WaitForSeconds(0.01f);
             }
-        currentWalkCount = 0;
-        
+
+            currentWalkCount = 0;
+
+        }
+
+        animator.SetBool("Walking", false);
         canMove = true;
     }
 
     void Update()
-    { 
+    {
         if (canMove)
         {
-            if(Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
+            if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
             {
-                canMove=false;
+                canMove = false;
                 StartCoroutine(MoveCoroutine());
             }
         }
